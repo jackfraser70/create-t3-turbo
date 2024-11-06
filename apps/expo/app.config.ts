@@ -2,9 +2,9 @@ import type { ConfigContext, ExpoConfig } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "expo",
-  slug: "expo",
-  scheme: "expo",
+  name: "joyful-dental",
+  slug: "joyful-dental",
+  scheme: "joyful-dental",
   version: "0.1.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
@@ -29,11 +29,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: "#1F104A",
     },
   },
-  // extra: {
-  //   eas: {
-  //     projectId: "your-eas-project-id",
-  //   },
-  // },
+  extra: {
+    eas: {
+      projectId: "23da2a3f-c951-4ab2-bfcd-be728bc61a6e",
+    },
+  },
   experiments: {
     tsconfigPaths: true,
     typedRoutes: true,

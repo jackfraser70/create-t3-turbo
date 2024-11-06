@@ -1,12 +1,12 @@
-import "@bacons/text-decoder/install";
+import '@bacons/text-decoder/install';
 
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useColorScheme } from "nativewind";
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useColorScheme } from 'nativewind';
 
-import { TRPCProvider } from "~/utils/api";
+import { TRPCProvider } from '~/utils/api';
 
-import "../styles.css";
+import '../styles.css';
 
 // This is the main layout of the app
 // It wraps your pages with the providers they need
@@ -21,10 +21,10 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#f472b6",
+            backgroundColor: '#CC2E97',
           },
           contentStyle: {
-            backgroundColor: colorScheme == "dark" ? "#09090B" : "#FFFFFF",
+            backgroundColor: colorScheme == 'dark' ? '#CC2E97' : '#FFFFFF',
           },
         }}
       />
