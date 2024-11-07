@@ -6,7 +6,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: "joyful-dental",
   scheme: "joyful-dental",
   version: "0.1.0",
-  orientation: "portrait",
+  orientation: "landscape",
   icon: "./assets/icon.png",
   userInterfaceStyle: "automatic",
   splash: {

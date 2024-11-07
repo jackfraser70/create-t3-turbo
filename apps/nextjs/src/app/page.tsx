@@ -1,14 +1,14 @@
-import { Suspense } from "react";
+import { Suspense } from 'react';
 
-import { api, HydrateClient } from "~/trpc/server";
-import { AuthShowcase } from "./_components/auth-showcase";
+import { api, HydrateClient } from '~/trpc/server';
+import { AuthShowcase } from './_components/auth-showcase';
 import {
   CreatePostForm,
   PostCardSkeleton,
   PostList,
-} from "./_components/posts";
+} from './_components/posts';
 
-export const runtime = "edge";
+export const runtime = 'edge';
 
 export default function HomePage() {
   // You can await this here if you don't want to show Suspense fallback below
@@ -19,7 +19,7 @@ export default function HomePage() {
       <main className="container h-screen py-16">
         <div className="flex flex-col items-center justify-center gap-4">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-primary">T3</span> Turbo
+            Joyful Dental
           </h1>
           <AuthShowcase />
 

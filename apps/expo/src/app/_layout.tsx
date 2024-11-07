@@ -20,10 +20,15 @@ export default function RootLayout() {
         */}
       <Stack
         screenOptions={{
+          headerShown: false,
           headerStyle: {
             backgroundColor: '#CC2E97',
           },
+
           contentStyle: {
+            flex: 1,
+            borderColor: 'green',
+            borderWidth: 4,
             backgroundColor: colorScheme == 'dark' ? '#CC2E97' : '#FFFFFF',
           },
         }}
