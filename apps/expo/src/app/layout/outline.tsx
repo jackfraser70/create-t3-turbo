@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import AppointmentList from './components/appointments/AppointmentList';
-import ChatScreen from './components/patientComms/ChatScreen';
+import AppointmentList from '../components/appointments/AppointmentList';
+import ChatScreen from '../components/patientComms/ChatScreen';
 
 export default function App() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);

@@ -110,9 +110,7 @@ const AppointmentList = ({ selectedAppointment, setSelectedAppointment }) => {
 const styles = StyleSheet.create({
   sidebar: {
     width: '25%',
-    backgroundColor: '#F8D7E4',
     padding: 10,
-
     flex: 1,
   },
   sidebarTitle: {

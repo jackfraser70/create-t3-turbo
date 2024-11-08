@@ -15,11 +15,11 @@ const styles = StyleSheet.create({
   appointment: {
     marginBottom: 10,
     padding: 10,
-    backgroundColor: '#F3C1D1',
+    backgroundColor: '#FBE8F',
     borderRadius: 8,
   },
   selectedAppointment: {
-    backgroundColor: '#E89EB0',
+    backgroundColor: '#FFFFFF',
   },
   appointmentText: {
     fontSize: 16,
