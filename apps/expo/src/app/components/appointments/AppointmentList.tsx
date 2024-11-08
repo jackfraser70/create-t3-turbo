@@ -38,7 +38,7 @@ const seedData = async () => {
 };
 
 const AppointmentList = ({ selectedAppointment, setSelectedAppointment }) => {
-  const { state, setState } = useContext(AppContext);
+  // const { state, setState } = useContext(AppContext);
 
   const appointments =
     useSubscribe(
@@ -54,20 +54,20 @@ const AppointmentList = ({ selectedAppointment, setSelectedAppointment }) => {
     ) || []; // Fallback to an empty array if undefined
 
   useEffect(() => {
-    seedData();
-
-    const intervalId = setInterval(async () => {
-      const newId = nanoid();
-      await rep.mutate.createAppointment({
-        id: newId,
-        time: '12pm',
-        name: `New Appointment ${newId}`,
-      });
-    }, 10000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
+    // seedData();
+    // const intervalId = setInterval(async () => {
+    //   if (appointments.length < 10) {
+    //     const newId = nanoid();
+    //     await rep.mutate.createAppointment({
+    //       id: newId,
+    //       time: '12pm',
+    //       name: `New Appointment ${newId}`,
+    //     });
+    //   }
+    // }, 5000);
+    // return () => {
+    //   clearInterval(intervalId);
+    // };
   }, []);
 
   const groupedAppointments = (appointments || []).reduce(
@@ -80,7 +80,7 @@ const AppointmentList = ({ selectedAppointment, setSelectedAppointment }) => {
   );
 
   return (
-    <View style={styles.sidebar}>
+    <View style={styles.appointmentListWrapper}>
       <Text style={styles.sidebarTitle}>Today</Text>
       <FlashList
         data={Object.values(groupedAppointments)}
@@ -108,10 +108,9 @@ const AppointmentList = ({ selectedAppointment, setSelectedAppointment }) => {
 };
 
 const styles = StyleSheet.create({
-  sidebar: {
-    width: '25%',
-    padding: 10,
-    flex: 1,
+  appointmentListWrapper: {
+    flex: 0.3,
+    backgroundColor: 'white',
   },
   sidebarTitle: {
     fontSize: 24,

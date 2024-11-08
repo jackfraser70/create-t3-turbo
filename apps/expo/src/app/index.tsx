@@ -1,14 +1,18 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
 
-import { AppProvider } from './contexts/AppContext';
-import MainLayout from './layout/MainLayout';
+export default function RedirectToReception() {
+  const router = useRouter();
 
-export default function Index() {
-  return (
-    <AppProvider>
-      <SafeAreaView className="bg-background" style={{ flex: 1 }}>
-        <MainLayout />
-      </SafeAreaView>
-    </AppProvider>
-  );
+  useEffect(() => {
+    // Delay the navigation to ensure the root layout is mounted
+    const timeoutId = setTimeout(() => {
+      router.replace('/reception');
+    }, 0);
+
+    // Cleanup the timeout if the component unmounts
+    return () => clearTimeout(timeoutId);
+  }, [router]);
+
+  return null; // This component doesn't render anything
 }

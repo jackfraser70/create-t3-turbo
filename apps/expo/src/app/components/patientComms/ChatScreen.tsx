@@ -6,6 +6,7 @@ import { Replicache } from 'replicache';
 import { nanoid } from 'nanoid';
 import MessageInput from './MessageInput';
 import { FlashList } from '@shopify/flash-list';
+import ChartOne from '../chart/Chart';
 
 // Initialize Replicache for messages
 const rep = new Replicache({
@@ -90,6 +91,7 @@ const ChatMessage = () => {
 
   return (
     <View style={{ flex: 1, maxHeight: '300' }}>
+      <ChartOne />
       <FlashList
         data={messages}
         style={{ flex: 1, borderWidth: 3, borderColor: 'blue' }}

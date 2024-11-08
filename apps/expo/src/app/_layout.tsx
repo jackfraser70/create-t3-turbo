@@ -3,7 +3,7 @@ import '@bacons/text-decoder/install';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
-
+import { Slot } from 'expo-router';
 import { TRPCProvider } from '~/utils/api';
 
 import '../styles.css';
@@ -18,7 +18,17 @@ export default function RootLayout() {
           The Stack component displays the current page.
           It also allows you to configure your screens 
         */}
-      <Stack
+      <Slot
+        screenOptions={{
+          contentStyle: {
+            flex: 1,
+            borderColor: 'green',
+            borderWidth: 4,
+            backgroundColor: colorScheme == 'dark' ? '#CC2E97' : '#FFFFFF',
+          },
+        }}
+      />
+      {/* <Stack
         screenOptions={{
           headerShown: false,
           headerStyle: {
@@ -32,7 +42,7 @@ export default function RootLayout() {
             backgroundColor: colorScheme == 'dark' ? '#CC2E97' : '#FFFFFF',
           },
         }}
-      />
+      /> */}
       <StatusBar />
     </TRPCProvider>
   );
