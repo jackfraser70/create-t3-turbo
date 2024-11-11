@@ -1,0 +1,141 @@
+import { FlashList } from "@shopify/flash-list";
+// import { customAlphabet } from "nanoid/non-secure";
+import React, { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
+// import type { WriteTransaction } from "replicache";
+// import { Replicache } from "replicache";
+import { useSubscribe } from "replicache-react";
+import { useReplicache } from "../../utils/use-replicache";
+import AppointmentCard from "./AppointmentCard";
+// const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
+// const rep = new Replicache({
+// 	name: "appointments",
+// 	licenseKey: "l58cd3914a58441f1a01198726ca82729",
+// 	mutators: {
+// 		async createAppointment(
+// 			tx: WriteTransaction,
+// 			{ id, time, name }: { id: string; time: string; name: string },
+// 		) {
+// 			await tx.put(`appointment/${id}`, { time, name });
+// 		},
+// 	},
+// 	pushURL: "/api/replicache/push",
+// 	pullURL: "/api/replicache/pull",
+// 	logLevel: "debug",
+// });
+
+const seedData = async () => {
+	// const dummyAppointments = [
+	// 	{ id: nanoid(), time: "10am", name: "Tom Clean2" },
+	// 	{ id: nanoid(), time: "10am", name: "Michael Mouthwash" },
+	// 	{ id: nanoid(), time: "11am", name: "Molly Molar" },
+	// 	{ id: nanoid(), time: "11am", name: "Peter Pulp" },
+	// ];
+	// for (const appointment of dummyAppointments) {
+	// 	await rep.mutate.createAppointment(appointment);
+	// }
+};
+interface AppointmentListProps {
+	selectedAppointment: string | null;
+	setSelectedAppointment: (appointment: string | null) => void;
+}
+
+const AppointmentList = ({
+	selectedAppointment,
+	setSelectedAppointment,
+}: AppointmentListProps) => {
+	// const { state, setState } = useContext(AppContext);
+	const { rep, close } = useReplicache("listID");
+	const appointments =
+		useSubscribe(
+			rep,
+			async (tx) => {
+				const list = await tx
+					.scan({ prefix: "appointment/" })
+					.entries()
+					.toArray();
+				return list.map(([key, value]) => value);
+			},
+			{
+				onData: [] as { time: string; name: string }[], // Explicitly define the type of the default value
+			},
+		) || []; // Fallback to an empty array if undefined
+
+	useEffect(() => {
+		seedData();
+		const intervalId = setInterval(async () => {
+			if (appointments.length < 10) {
+				// set newId to a random id
+				const newId = Math.random().toString(36).substring(2, 15);
+				const newAppointment = {
+					id: newId,
+					time: "12pm",
+					name: `New Appointment ${newId}`,
+				};
+				console.log("newAppointment", newAppointment);
+				await rep.mutate.createAppointment(newAppointment);
+			}
+		}, 5000);
+		return () => {
+			clearInterval(intervalId);
+		};
+	}, [appointments, rep]);
+
+	const groupedAppointments = (appointments || []).reduce(
+		(acc, { time, name }) => {
+			if (!acc[time]) acc[time] = { title: time, data: [] };
+			acc[time].data.push(name);
+			return acc;
+		},
+		{} as Record<string, { title: string; data: string[] }>,
+	);
+
+	return (
+		<View style={styles.appointmentListWrapper}>
+			<Text style={styles.sidebarTitle}>Today</Text>
+			<FlashList
+				data={Object.values(groupedAppointments)}
+				keyExtractor={(item, index) => item.title + index}
+				renderItem={({ item }) => (
+					<View>
+						<View style={styles.header}>
+							<Text style={styles.headerText}>{item.title}</Text>
+						</View>
+						{item.data.map((name, idx) => (
+							<AppointmentCard
+								key={name}
+								name={name}
+								// onPress={() => setSelectedAppointment(name)}
+								isSelected={selectedAppointment === name}
+							/>
+						))}
+					</View>
+				)}
+				estimatedItemSize={100}
+				contentContainerStyle={{ paddingBottom: 20 }}
+			/>
+		</View>
+	);
+};
+
+const styles = StyleSheet.create({
+	appointmentListWrapper: {
+		flex: 0.3,
+		backgroundColor: "white",
+	},
+	sidebarTitle: {
+		fontSize: 24,
+		fontWeight: "bold",
+		marginBottom: 10,
+	},
+	header: {
+		backgroundColor: "#F8D7E4",
+		padding: 5,
+	},
+	headerText: {
+		fontSize: 18,
+		fontWeight: "bold",
+	},
+});
+
+export default AppointmentList;

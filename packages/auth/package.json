@@ -1,5 +1,5 @@
 {
-	"name": "@acme/auth",
+	"name": "@joyfulwork/auth",
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
@@ -18,7 +18,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@acme/db": "workspace:*",
+		"@joyfulwork/db": "workspace:*",
 		"@auth/core": "0.34.2",
 		"@auth/drizzle-adapter": "1.4.2",
 		"@t3-oss/env-nextjs": "^0.11.1",
@@ -29,7 +29,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@acme/tsconfig": "workspace:*",
+		"@joyfulwork/tsconfig": "workspace:*",
 		"typescript": "catalog:",
 		"@biomejs/biome": "catalog:"
 	}

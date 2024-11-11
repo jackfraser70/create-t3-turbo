@@ -1,5 +1,5 @@
 {
-	"name": "@acme/validators",
+	"name": "@joyfulwork/validators",
 	"private": true,
 	"version": "0.1.0",
 	"type": "module",
@@ -22,7 +22,7 @@
 		"zod": "catalog:"
 	},
 	"devDependencies": {
-		"@acme/tsconfig": "workspace:*",
+		"@joyfulwork/tsconfig": "workspace:*",
 		"typescript": "catalog:",
 		"@biomejs/biome": "catalog:"
 	}

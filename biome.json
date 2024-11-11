@@ -7,7 +7,16 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": [".next", ".expo", "ios", "android", "dist"]
+		"ignore": [
+			".next",
+			".expo",
+			"ios",
+			"android",
+			"dist",
+			"expo-env.d.ts",
+			".cache",
+			"node_modules"
+		]
 	},
 	"formatter": {
 		"enabled": true,

@@ -7,8 +7,8 @@ import type {
 } from "next-auth";
 import Discord from "next-auth/providers/discord";
 
-import { db } from "@acme/db/client";
-import { Account, Session, User } from "@acme/db/schema";
+import { db } from "@joyfulwork/db/client";
+import { Account, Session, User } from "@joyfulwork/db/schema";
 
 import { env } from "../env";
 

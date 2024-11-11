@@ -102,7 +102,7 @@ pnpm db:push
 
 1. Make sure you have XCode and XCommand Line Tools installed [as shown on expo docs](https://docs.expo.dev/workflow/ios-simulator).
 
-   > **NOTE:** If you just installed XCode, or if you have updated it, you need to open the simulator manually once. Run `npx expo start` from `apps/expo`, and then enter `I` to launch Expo Go. After the manual launch, you can run `pnpm dev` in the root directory.
+   > **NOTE:** If you just installed XCode, or if you have updated it, you need to open the simulator manually once. Run `npx expo start` from `apps/practice`, and then enter `I` to launch Expo Go. After the manual launch, you can run `pnpm dev` in the root directory.
 
    ```diff
    +  "dev": "expo start --ios",
@@ -114,7 +114,7 @@ pnpm db:push
 
 1. Install Android Studio tools [as shown on expo docs](https://docs.expo.dev/workflow/android-studio-emulator).
 
-2. Change the `dev` script at `apps/expo/package.json` to open the Android emulator.
+2. Change the `dev` script at `apps/practice/package.json` to open the Android emulator.
 
    ```diff
    +  "dev": "expo start --android",
@@ -202,7 +202,7 @@ Deploying your Expo application works slightly differently compared to Next.js o
 
 1. Make sure to modify the `getBaseUrl` function to point to your backend's production URL:
 
-   <https://github.com/t3-oss/create-t3-turbo/blob/656965aff7db271e5e080242c4a3ce4dad5d25f8/apps/expo/src/utils/api.tsx#L20-L37>
+   <https://github.com/t3-oss/create-t3-turbo/blob/656965aff7db271e5e080242c4a3ce4dad5d25f8/apps/practice/src/utils/api.tsx#L20-L37>
 
 2. Let's start by setting up [EAS Build](https://docs.expo.dev/build/introduction), which is short for Expo Application Services. The build service helps you create builds of your app, without requiring a full native development setup. The commands below are a summary of [Creating your first build](https://docs.expo.dev/build/setup).
 
@@ -214,7 +214,7 @@ Deploying your Expo application works slightly differently compared to Next.js o
    eas login
 
    # Configure your Expo app
-   cd apps/expo
+   cd apps/practice
    eas build:configure
    ```
 
@@ -242,7 +242,7 @@ Deploying your Expo application works slightly differently compared to Next.js o
 
    ```bash
    # Add the `expo-updates` library to your Expo app
-   cd apps/expo
+   cd apps/practice
    pnpm expo install expo-updates
 
    # Configure EAS Update
@@ -254,7 +254,7 @@ Deploying your Expo application works slightly differently compared to Next.js o
 8. Now that everything is ready for updates, let's create a new update for `production` builds. With the `--auto` flag, EAS Update uses your current git branch name and commit message for this update. See [How EAS Update works](https://docs.expo.dev/eas-update/how-eas-update-works/#publishing-an-update) for more information.
 
    ```bash
-   cd apps/expo
+   cd apps/practice
    eas update --auto
    ```
 

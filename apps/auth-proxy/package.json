@@ -1,5 +1,5 @@
 {
-	"name": "@acme/auth-proxy",
+	"name": "@joyfulwork/auth-proxy",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -13,8 +13,8 @@
 		"@auth/core": "0.34.2"
 	},
 	"devDependencies": {
-		"@acme/tailwind-config": "workspace:*",
-		"@acme/tsconfig": "workspace:*",
+		"@joyfulwork/tailwind-config": "workspace:*",
+		"@joyfulwork/tsconfig": "workspace:*",
 		"@types/node": "^20.16.11",
 		"h3": "^1.13.0",
 		"nitropack": "^2.9.7",
