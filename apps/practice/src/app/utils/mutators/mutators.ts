@@ -27,6 +27,7 @@
 
 import type { WriteTransaction } from "replicache";
 
+import { deleteItemAsync } from "expo-secure-store";
 import { type Todo, type TodoUpdate, listTodos } from "./todo";
 
 export type M = typeof mutators;
@@ -36,7 +37,12 @@ export const mutators = {
 		tx: WriteTransaction,
 		{ id, time, name }: { id: string; time: string; name: string },
 	) {
+		console.log("createAppointment____", id, time, name);
 		await tx.put(`appointment/${id}`, { time, name });
+	},
+	async deleteItemAsync(tx: WriteTransaction, id: string) {
+		console.log("deleteItemAsync____", id);
+		await tx.del(id);
 	},
 	updateTodo: async (tx: WriteTransaction, update: TodoUpdate) => {
 		// In a real app you may want to validate the incoming data is in fact a

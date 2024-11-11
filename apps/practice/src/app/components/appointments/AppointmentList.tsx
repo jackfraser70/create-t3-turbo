@@ -24,17 +24,40 @@ import AppointmentCard from "./AppointmentCard";
 // 	logLevel: "debug",
 // });
 
-const seedData = async () => {
-	// const dummyAppointments = [
-	// 	{ id: nanoid(), time: "10am", name: "Tom Clean2" },
-	// 	{ id: nanoid(), time: "10am", name: "Michael Mouthwash" },
-	// 	{ id: nanoid(), time: "11am", name: "Molly Molar" },
-	// 	{ id: nanoid(), time: "11am", name: "Peter Pulp" },
-	// ];
-	// for (const appointment of dummyAppointments) {
-	// 	await rep.mutate.createAppointment(appointment);
-	// }
-};
+// Define the type for an appointment
+interface Appointment {
+	id: string;
+	time: string;
+	name: string;
+}
+
+// const seedData = async (rep: any) => {
+// 	// const dummyAppointments = [
+// 	// 	{
+// 	// 		id: Math.random().toString(36).substring(2, 15),
+// 	// 		time: "10am",
+// 	// 		name: "Tom Clean2",
+// 	// 	},
+// 	// 	{
+// 	// 		id: Math.random().toString(36).substring(2, 15),
+// 	// 		time: "10am",
+// 	// 		name: "Michael Mouthwash",
+// 	// 	},
+// 	// 	{
+// 	// 		id: Math.random().toString(36).substring(2, 15),
+// 	// 		time: "11am",
+// 	// 		name: "Molly Molar",
+// 	// 	},
+// 	// 	{
+// 	// 		id: Math.random().toString(36).substring(2, 15),
+// 	// 		time: "11am",
+// 	// 		name: "Peter Pulp",
+// 	// 	},
+// 	// ];
+// 	// for (const appointment of dummyAppointments) {
+// 	// 	await rep.mutate.createAppointment(appointment);
+// 	// }
+// };
 interface AppointmentListProps {
 	selectedAppointment: string | null;
 	setSelectedAppointment: (appointment: string | null) => void;
@@ -47,24 +70,26 @@ const AppointmentList = ({
 	// const { state, setState } = useContext(AppContext);
 	const { rep, close } = useReplicache("listID");
 	const appointments =
-		useSubscribe(
-			rep,
-			async (tx) => {
-				const list = await tx
-					.scan({ prefix: "appointment/" })
-					.entries()
-					.toArray();
-				return list.map(([key, value]) => value);
-			},
-			{
-				onData: [] as { time: string; name: string }[], // Explicitly define the type of the default value
-			},
-		) || []; // Fallback to an empty array if undefined
+		useSubscribe(rep, async (tx) => {
+			const list = await tx
+				.scan({ prefix: "appointment/" })
+				.entries()
+				.toArray();
+			return list.map(([key, value]) => {
+				if (typeof value === "object" && value !== null) {
+					return {
+						...value,
+						id: key,
+					};
+				}
+				return { id: key }; // Fallback if value is not an object
+			}) as Appointment[];
+		}) || []; // Fallback to an empty array if undefined
 
 	useEffect(() => {
-		seedData();
+		// seedData(rep);
 		const intervalId = setInterval(async () => {
-			if (appointments.length < 10) {
+			if (appointments.length < 5) {
 				// set newId to a random id
 				const newId = Math.random().toString(36).substring(2, 15);
 				const newAppointment = {
@@ -81,34 +106,40 @@ const AppointmentList = ({
 		};
 	}, [appointments, rep]);
 
-	const groupedAppointments = (appointments || []).reduce(
-		(acc, { time, name }) => {
-			if (!acc[time]) acc[time] = { title: time, data: [] };
-			acc[time].data.push(name);
-			return acc;
-		},
-		{} as Record<string, { title: string; data: string[] }>,
-	);
+	// const groupedAppointments = (appointments || []).reduce(
+	// 	(acc, { id, time, name }) => {
+	// 		if (!acc[time]) acc[time] = { id, title: time, data: [] };
+	// 		acc[time].data.push({ id, name });
+	// 		return acc;
+	// 	},
+	// 	{} as Record<string, { id: string; title: string; data: string[] }>,
+	// );
 
+	const deleteAppointment = async (name: string) => {
+		console.log("deleting appointment", name);
+		await rep.mutate.deleteItemAsync(name);
+	};
 	return (
 		<View style={styles.appointmentListWrapper}>
+			{/* <Text>{JSON.stringify(appointments)}</Text> */}
 			<Text style={styles.sidebarTitle}>Today</Text>
 			<FlashList
-				data={Object.values(groupedAppointments)}
-				keyExtractor={(item, index) => item.title + index}
-				renderItem={({ item }) => (
+				data={appointments} // Ensure appointments is an array of Appointment objects
+				keyExtractor={(item: Appointment, index: number) => {
+					if (!item.id) {
+						console.warn("Missing id for item", item);
+						return `missing-id-${index}`; // Use index as part of the key if id is missing
+					}
+					return item.id.toString();
+				}}
+				renderItem={({ item }: { item: Appointment }) => (
 					<View>
-						<View style={styles.header}>
-							<Text style={styles.headerText}>{item.title}</Text>
-						</View>
-						{item.data.map((name, idx) => (
-							<AppointmentCard
-								key={name}
-								name={name}
-								// onPress={() => setSelectedAppointment(name)}
-								isSelected={selectedAppointment === name}
-							/>
-						))}
+						<AppointmentCard
+							key={item.id}
+							name={item.name}
+							onPress={() => deleteAppointment(item.id)}
+							isSelected={selectedAppointment === item.id}
+						/>
 					</View>
 				)}
 				estimatedItemSize={100}
