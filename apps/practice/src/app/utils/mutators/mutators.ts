@@ -27,7 +27,7 @@
 
 import type { WriteTransaction } from "replicache";
 
-import { deleteItemAsync } from "expo-secure-store";
+import type { Task } from "./tasks";
 import { type Todo, type TodoUpdate, listTodos } from "./todo";
 
 export type M = typeof mutators;
@@ -38,11 +38,15 @@ export const mutators = {
 		{ id, time, name }: { id: string; time: string; name: string },
 	) {
 		console.log("createAppointment____", id, time, name);
-		await tx.put(`appointment/${id}`, { time, name });
+		await tx.set(`appointment/${id}`, { time, name });
 	},
 	async deleteItemAsync(tx: WriteTransaction, id: string) {
 		console.log("deleteItemAsync____", id);
 		await tx.del(id);
+	},
+	async createTask(tx: WriteTransaction, task: Task) {
+		console.log("createTask____", task);
+		await tx.set(`task/${task.id}`, { ...task });
 	},
 	updateTodo: async (tx: WriteTransaction, update: TodoUpdate) => {
 		// In a real app you may want to validate the incoming data is in fact a
@@ -50,7 +54,7 @@ export const mutators = {
 		// some heper functions to do this.
 		const prev = (await tx.get(update.id)) as Todo;
 		const next = { ...prev, ...update };
-		await tx.put(next.id, next);
+		await tx.set(next.id, next);
 	},
 
 	deleteTodo: async (tx: WriteTransaction, id: string) => {
@@ -73,6 +77,6 @@ export const mutators = {
 		);
 
 		const maxSort = todos.pop()?.sort ?? 0;
-		await tx.put(todo.id, { ...todo, sort: maxSort + 1 });
+		await tx.set(todo.id, { ...todo, sort: maxSort + 1 });
 	},
 };

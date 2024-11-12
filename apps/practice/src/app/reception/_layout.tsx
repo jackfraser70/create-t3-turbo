@@ -1,143 +1,50 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import { View } from "react-native";
 import AppointmentList from "../components/appointments/AppointmentList";
+import PatientMessages from "../components/messages/PatientMessages";
+import PatientDetails from "../components/patient/PatientDetails";
+import IncomingCall from "../components/phone/IncomingCall";
+import TaskList from "../components/tasks/TaskList";
 import type { LayoutData } from "../interfaces/LayoutData";
+import LeftToolbar from "../layout/LeftToolbar";
 import MainLayout from "../layout/MainLayout";
-import RecursiveComponent from "../layout/RecursiveComponent";
+import RightToolbar from "../layout/RightToolbar";
 
 export default function ReceptionLayout() {
 	const [layoutData, setLayoutData] = useState<LayoutData[]>([]);
-	const [selectedAppointment, setSelectedAppointment] = useState(null);
+	const [selectedAppointment, setSelectedAppointment] = useState<string | null>(
+		null,
+	);
 
-	useEffect(() => {
-		setLayoutData([
-			{
-				name: "mainLayout",
-				component: "MainLayout",
-				props: {},
+	return (
+		<MainLayout>
+			<View className="flex-auto flex-row">
+				<View className="w-1/24">
+					<LeftToolbar />
+				</View>
+				<View className="w-4/24 px-1">
+					<AppointmentList
+						selectedAppointment={selectedAppointment}
+						setSelectedAppointment={setSelectedAppointment}
+					/>
+				</View>
 
-				children: [
-					{
-						name: "appointmentList",
-						component: "AppointmentList",
-						props: {
-							selectedAppointment,
-							setSelectedAppointment,
-						},
-					},
-				],
-				// 	// {
-				// 	// 	name: "root",
-				// 	// 	component: "View",
-				// 	// 	props: { style: styles.root },
-				// 	// 	children: [
-				// 	// 		{
-				// 	// 			name: "container",
-				// 	// 			component: "View",
-				// 	// 			props: { style: styles.container },
-				// 	// 			children: [
-				// 	// 				{
-				// 	// 					name: "appointmentList",
-				// 	// 					component: "AppointmentList",
-				// 	// 					props: {
-				// 	// 						selectedAppointment,
-				// 	// 						setSelectedAppointment,
-				// 	// 					},
-				// 	// 				},
-				// 	// 				{
-				// 	// 					name: "header",
-				// 	// 					component: "View",
-				// 	// 					props: { style: styles.header },
-				// 	// 					children: [
-				// 	// 						{
-				// 	// 							name: "headerText",
-				// 	// 							component: "Text",
-				// 	// 							props: {
-				// 	// 								style: styles.headerText,
-				// 	// 								children: selectedAppointment,
-				// 	// 							},
-				// 	// 						},
-				// 	// 						{
-				// 	// 							name: "subHeaderText",
-				// 	// 							component: "Text",
-				// 	// 							props: {
-				// 	// 								style: styles.subHeaderText,
-				// 	// 								children: `Details for ${selectedAppointment}`,
-				// 	// 							},
-				// 	// 						},
-				// 	// 					],
-				// 	// 				},
-				// 	// 				{
-				// 	// 					name: "details",
-				// 	// 					component: "View",
-				// 	// 					props: { style: styles.details },
-				// 	// 					children: [
-				// 	// 						{
-				// 	// 							name: "detailsText1",
-				// 	// 							component: "Text",
-				// 	// 							props: {
-				// 	// 								style: styles.detailsText,
-				// 	// 								children: "10am 15 mins",
-				// 	// 							},
-				// 	// 						},
-				// 	// 						{
-				// 	// 							name: "detailsText2",
-				// 	// 							component: "Text",
-				// 	// 							props: {
-				// 	// 								style: styles.detailsText,
-				// 	// 								children: "Regular exam with John",
-				// 	// 							},
-				// 	// 						},
-				// 	// 					],
-				// 	// 				},
-				// 	// 			],
-				// 	// 		},
-				// 	// 	],
-				// 	// },
-				// ],
-			},
-		]);
-	}, [selectedAppointment]);
+				<View className="w-6/24 px-1 flex justify-between">
+					<View>
+						<PatientDetails />
+						<TaskList />
+						<IncomingCall />
+					</View>
+				</View>
 
-	return <RecursiveComponent data={layoutData} />;
+				<View className="w-12/24 px-1" id="task-display-area">
+					<PatientMessages />
+				</View>
+
+				<View className="w-1/24">
+					<RightToolbar />
+				</View>
+			</View>
+		</MainLayout>
+	);
 }
-
-const styles = StyleSheet.create({
-	root: {
-		flex: 1,
-	},
-	container: {
-		flex: 1,
-		flexDirection: "row",
-		backgroundColor: "#FDEFF4",
-	},
-	mainContent: {
-		flex: 1,
-		padding: 20,
-	},
-	subHeaderText: {
-		fontSize: 18,
-		color: "#777",
-	},
-	details: {
-		marginBottom: 20,
-	},
-	detailsText: {
-		fontSize: 16,
-		color: "#555",
-	},
-	placeholderText: {
-		fontSize: 18,
-		color: "#777",
-		textAlign: "center",
-		marginTop: 20,
-	},
-	header: {
-		backgroundColor: "#F8D7E4",
-		padding: 5,
-	},
-	headerText: {
-		fontSize: 18,
-		fontWeight: "bold",
-	},
-});

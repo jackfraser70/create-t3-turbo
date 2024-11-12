@@ -12,18 +12,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	splash: {
 		image: "./assets/icon.png",
 		resizeMode: "contain",
-		backgroundColor: "#1F104A",
+		backgroundColor: "#E351B9",
 	},
 	updates: {
 		fallbackToCacheTimeout: 0,
 	},
 	assetBundlePatterns: ["**/*"],
 	ios: {
-		bundleIdentifier: "your.bundle.identifier",
+		bundleIdentifier: "joyful.dental.practice",
 		supportsTablet: true,
 	},
 	android: {
-		package: "your.bundle.identifier",
+		package: "joyful.dental.practice",
 		adaptiveIcon: {
 			foregroundImage: "./assets/icon.png",
 			backgroundColor: "#1F104A",

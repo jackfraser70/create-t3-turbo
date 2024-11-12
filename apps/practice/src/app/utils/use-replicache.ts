@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 import EventSource from "react-native-sse";
 import { Replicache, dropAllDatabases } from "replicache";
 import { mutators } from "./mutators/mutators";
-export function useReplicache(listID: string) {
+export function useReplicache(listID: string, useMemory = false) {
 	// See https://doc.replicache.dev/licensing for how to get a license key.
 	const licenseKey = "l58cd3914a58441f1a01198726ca82729";
 	if (!licenseKey) {
@@ -14,17 +14,19 @@ export function useReplicache(listID: string) {
 	const rep = React.useMemo(
 		() =>
 			new Replicache({
-				licenseKey,
+				licenseKey: "l58cd3914a58441f1a01198726ca82729",
 				pushURL: `http://127.0.0.1:8080/api/replicache/push?spaceID=${listID}`,
 				pullURL: `http://127.0.0.1:8080/api/replicache/pull?spaceID=${listID}`,
-				...(Platform.OS !== "web" && {
-					kvStore: createReplicacheExpoSQLiteKVStore,
-				}),
+				kvStore: useMemory
+					? "mem"
+					: Platform.OS !== "web"
+						? createReplicacheExpoSQLiteKVStore
+						: undefined,
 				name: listID,
 				mutators,
-				// logLevel: "debug",
+				logLevel: "info",
 			}),
-		[listID],
+		[listID, useMemory],
 	);
 
 	const close = React.useCallback(async () => {
@@ -36,30 +38,30 @@ export function useReplicache(listID: string) {
 		});
 	}, [rep]);
 
-	React.useEffect(() => {
-		// Note: React Native doesn't support SSE; this is just a polyfill.
-		// You probably want to setup a WebSocket connection via Pusher.
-		const ev = new EventSource(
-			`http://127.0.0.1:8080/api/replicache/poke?spaceID=${listID}`,
-			{
-				headers: {
-					withCredentials: true,
-				},
-			},
-		);
+	// React.useEffect(() => {
+	// 	// Note: React Native doesn't support SSE; this is just a polyfill.
+	// 	// You probably want to setup a WebSocket connection via Pusher.
+	// 	const ev = new EventSource(
+	// 		`http://127.0.0.1:8080/api/replicache/poke?spaceID=${listID}`,
+	// 		{
+	// 			headers: {
+	// 				withCredentials: true,
+	// 			},
+	// 		},
+	// 	);
 
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		ev.addEventListener("message", async (evt: any) => {
-			if (evt.type !== "message") return;
-			if (evt.data === "poke") {
-				await rep.pull();
-			}
-		});
+	// 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	// 	ev.addEventListener("message", async (evt: any) => {
+	// 		if (evt.type !== "message") return;
+	// 		if (evt.data === "poke") {
+	// 			await rep.pull();
+	// 		}
+	// 	});
 
-		return () => {
-			ev.close();
-		};
-	}, [listID, rep]);
+	// 	return () => {
+	// 		ev.close();
+	// 	};
+	// }, [listID, rep]);
 
 	return { rep, close };
 }

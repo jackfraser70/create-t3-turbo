@@ -16,7 +16,7 @@ export interface LayoutData {
 	/**
 	 * props for the component
 	 */
-	props: Record<string, unknown>;
+	props?: Record<string, unknown>;
 	/**
 	 * children of the component
 	 */

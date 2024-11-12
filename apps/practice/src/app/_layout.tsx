@@ -2,7 +2,7 @@ import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 import { TRPCProvider } from "~/utils/api";
-
+import "expo-dev-client";
 import "../styles.css";
 
 // This is the main layout of the app

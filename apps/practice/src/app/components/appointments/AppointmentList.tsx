@@ -68,7 +68,7 @@ const AppointmentList = ({
 	setSelectedAppointment,
 }: AppointmentListProps) => {
 	// const { state, setState } = useContext(AppContext);
-	const { rep, close } = useReplicache("listID");
+	const { rep, close } = useReplicache("appoointments");
 	const appointments =
 		useSubscribe(rep, async (tx) => {
 			const list = await tx
@@ -89,7 +89,7 @@ const AppointmentList = ({
 	useEffect(() => {
 		// seedData(rep);
 		const intervalId = setInterval(async () => {
-			if (appointments.length < 5) {
+			if (appointments.length < 10) {
 				// set newId to a random id
 				const newId = Math.random().toString(36).substring(2, 15);
 				const newAppointment = {
@@ -115,14 +115,31 @@ const AppointmentList = ({
 	// 	{} as Record<string, { id: string; title: string; data: string[] }>,
 	// );
 
+	//close the replicache when the component unmounts
+	useEffect(() => {
+		return () => {
+			close();
+		};
+	}, [close]);
+
 	const deleteAppointment = async (name: string) => {
 		console.log("deleting appointment", name);
 		await rep.mutate.deleteItemAsync(name);
 	};
+	const [refreshing, setRefreshing] = React.useState(false);
+
+	const onRefresh = React.useCallback(() => {
+		setRefreshing(true);
+		// Simulate a network request or any async operation
+		setTimeout(() => {
+			// Update your data here
+			setRefreshing(false);
+		}, 500);
+	}, []);
 	return (
-		<View style={styles.appointmentListWrapper}>
+		<View className="flex-1">
 			{/* <Text>{JSON.stringify(appointments)}</Text> */}
-			<Text style={styles.sidebarTitle}>Today</Text>
+			<Text className="text-primary text-2xl font-bold">Today</Text>
 			<FlashList
 				data={appointments} // Ensure appointments is an array of Appointment objects
 				keyExtractor={(item: Appointment, index: number) => {
@@ -144,29 +161,12 @@ const AppointmentList = ({
 				)}
 				estimatedItemSize={100}
 				contentContainerStyle={{ paddingBottom: 20 }}
+				showsVerticalScrollIndicator={false}
+				refreshing={refreshing} // Control the refreshing state
+				onRefresh={onRefresh} // Handle the refresh action
 			/>
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	appointmentListWrapper: {
-		flex: 0.3,
-		backgroundColor: "white",
-	},
-	sidebarTitle: {
-		fontSize: 24,
-		fontWeight: "bold",
-		marginBottom: 10,
-	},
-	header: {
-		backgroundColor: "#F8D7E4",
-		padding: 5,
-	},
-	headerText: {
-		fontSize: 18,
-		fontWeight: "bold",
-	},
-});
 
 export default AppointmentList;
