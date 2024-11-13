@@ -1,87 +1,68 @@
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
-import React, { useEffect, useRef } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { useContext } from "react";
 import {
-	type MakeMutators,
-	Replicache,
-	type WriteTransaction,
-} from "replicache";
+	Button,
+	LayoutAnimation,
+	Platform,
+	Text,
+	TouchableOpacity,
+	UIManager,
+	View,
+} from "react-native";
+import type { ReadTransaction } from "replicache";
 import { useSubscribe } from "replicache-react";
+import { AppContext } from "~/app/contexts/AppContext";
 import type { Task } from "~/app/utils/mutators/tasks";
 
-// Define the mutators type
-type Mutators = MakeMutators<{
-	createNewTask: (tx: WriteTransaction, task: Task) => Promise<void>;
-}>;
+// Enable LayoutAnimation on Android
+if (
+	Platform.OS === "android" &&
+	UIManager.setLayoutAnimationEnabledExperimental
+) {
+	UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+export async function listTasks(tx: ReadTransaction) {
+	const tasks = await tx.scan<Task>({ prefix: "task/" }).values().toArray();
+	return tasks.sort(
+		(a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime(),
+	);
+}
 
 const TaskList = () => {
-	const listID = "tasks";
-	const rep = useRef<Replicache<Mutators> | null>(null);
+	const { replicache } = useContext(AppContext);
+	const rep = replicache.user.rep;
 
-	useEffect(() => {
-		if (!rep.current) {
-			console.log(">>>>>>>>>>>>>>>> creating rep");
-			rep.current = new Replicache<Mutators>({
-				licenseKey: "l58cd3914a58441f1a01198726ca82729",
-				pushURL: `http://127.0.0.1:8080/api/replicache/push?spaceID=${listID}`,
-				pullURL: `http://127.0.0.1:8080/api/replicache/pull?spaceID=${listID}`,
-				kvStore: "mem",
-				name: "tasks",
-				mutators: {
-					async createNewTask(tx: WriteTransaction, task: Task) {
-						console.log("createTaskN____", task);
-						await tx.set(`task/${task.id}`, { ...task });
-					},
-				},
-				// logLevel: "debug",
+	const tasks = useSubscribe(rep, listTasks, { default: [] });
+
+	const handleNewTask = (name: string) => {
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		if (rep.mutate) {
+			rep.mutate.createTask({
+				id: Math.random().toString(36).substring(2, 15),
+				name,
+				dueDate: new Date().toISOString(),
 			});
+		} else {
+			console.error("Mutation object is undefined");
 		}
-	}, []);
+	};
 
-	const tasks =
-		useSubscribe(rep.current, async (tx) => {
-			const list = await tx.scan({ prefix: "task/" }).entries().toArray();
+	const handleDeleteTask = (id: string) => {
+		console.log("deleting task", id);
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		rep.mutate.deleteItemAsync(`task/${id}`);
+	};
 
-			if (list.length === 0) {
-				console.log("TASK  list 0");
-				return []; // Return an empty array if no tasks are found
-			}
-			return list.map(([key, value]) => {
-				if (typeof value === "object" && value !== null) {
-					console.log("return ", {
-						...value,
-						id: key,
-					});
-					return {
-						...value,
-						id: key,
-					};
-				}
-				return { id: key }; // Fallback if value is not an object
-			}) as Task[];
-		}) || []; // Fallback to an empty array if undefined
-
-	// create 5 items if no in the list
-	useEffect(() => {
-		if (tasks.length === 0) {
-			console.log(">>>>>>>>>>>>>>>> creating tasks");
-			for (let i = 0; i < 5; i++) {
-				rep.current?.mutate.createNewTask({
-					id: i.toString(),
-					name: `Task ${i}`,
-					dueDate: new Date().toISOString(),
-				});
-			}
-		}
-	}, [tasks]);
 	return (
-		<View className="p-4 bg-white rounded-lg shadow-sm my-5 h-3/6 ">
+		<View className="p-4 my-5">
 			<View className="flex-row justify-between  mb-2">
 				<Text className="text-pink-600 font-bold">Tasks</Text>
 			</View>
 
 			<View className="h-full">
+				<Button title="New Task" onPress={() => handleNewTask("New Task 3")} />
 				<FlashList
 					data={tasks}
 					keyExtractor={(item: Task, index: number) => {
@@ -93,18 +74,20 @@ const TaskList = () => {
 					}}
 					renderItem={({ item }: { item: Task }) => (
 						<View>
-							<View key={item.id}>
-								<Ionicons
-									name="radio-button-off"
-									size={24}
-									color="pink"
-									className="mr-2"
-								/>
-								<View>
-									<Text className="text-pink-600 font-bold">{item.name}</Text>
-									<Text className="text-gray-500">{item.dueDate}</Text>
+							<TouchableOpacity onPress={() => handleDeleteTask(item.id)}>
+								<View key={item.id}>
+									<Ionicons
+										name="radio-button-off"
+										size={24}
+										color="pink"
+										className="mr-2"
+									/>
+									<View>
+										<Text className="text-pink-600 font-bold">{item.name}</Text>
+										<Text className="text-gray-500">{item.dueDate}</Text>
+									</View>
 								</View>
-							</View>
+							</TouchableOpacity>
 						</View>
 					)}
 					estimatedItemSize={20} // Adjust this value based on your item size

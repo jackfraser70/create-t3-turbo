@@ -40,6 +40,7 @@ export const mutators = {
 		console.log("createAppointment____", id, time, name);
 		await tx.set(`appointment/${id}`, { time, name });
 	},
+
 	async deleteItemAsync(tx: WriteTransaction, id: string) {
 		console.log("deleteItemAsync____", id);
 		await tx.del(id);

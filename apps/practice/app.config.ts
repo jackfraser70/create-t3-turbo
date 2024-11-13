@@ -7,12 +7,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	scheme: "joyful-dental",
 	version: "0.1.0",
 	orientation: "landscape",
-	icon: "./assets/icon.png",
+	icon: "./assets/joyful_icon.png",
 	userInterfaceStyle: "automatic",
 	splash: {
-		image: "./assets/icon.png",
+		image: "./assets/joyful_icon.png",
 		resizeMode: "contain",
-		backgroundColor: "#E351B9",
+		backgroundColor: "#CC2E97",
 	},
 	updates: {
 		fallbackToCacheTimeout: 0,
@@ -25,8 +25,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 	android: {
 		package: "joyful.dental.practice",
 		adaptiveIcon: {
-			foregroundImage: "./assets/icon.png",
-			backgroundColor: "#1F104A",
+			foregroundImage: "./assets/joyful_icon.png",
+			backgroundColor: "#CC2E97",
 		},
 	},
 	extra: {

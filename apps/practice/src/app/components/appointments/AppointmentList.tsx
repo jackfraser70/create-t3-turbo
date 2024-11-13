@@ -1,10 +1,12 @@
 import { FlashList } from "@shopify/flash-list";
 // import { customAlphabet } from "nanoid/non-secure";
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import type { ReadTransaction } from "replicache";
 // import type { WriteTransaction } from "replicache";
 // import { Replicache } from "replicache";
 import { useSubscribe } from "replicache-react";
+import { AppContext } from "~/app/contexts/AppContext";
 import { useReplicache } from "../../utils/use-replicache";
 import AppointmentCard from "./AppointmentCard";
 // const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
@@ -25,11 +27,6 @@ import AppointmentCard from "./AppointmentCard";
 // });
 
 // Define the type for an appointment
-interface Appointment {
-	id: string;
-	time: string;
-	name: string;
-}
 
 // const seedData = async (rep: any) => {
 // 	// const dummyAppointments = [
@@ -63,28 +60,26 @@ interface AppointmentListProps {
 	setSelectedAppointment: (appointment: string | null) => void;
 }
 
+export type Appointment = {
+	id: string;
+	time: string;
+	name: string;
+};
+
+export async function listAppointments(tx: ReadTransaction) {
+	return await tx
+		.scan<Appointment>({ prefix: "appointment/" })
+		.values()
+		.toArray();
+}
 const AppointmentList = ({
 	selectedAppointment,
 	setSelectedAppointment,
 }: AppointmentListProps) => {
-	// const { state, setState } = useContext(AppContext);
-	const { rep, close } = useReplicache("appoointments");
-	const appointments =
-		useSubscribe(rep, async (tx) => {
-			const list = await tx
-				.scan({ prefix: "appointment/" })
-				.entries()
-				.toArray();
-			return list.map(([key, value]) => {
-				if (typeof value === "object" && value !== null) {
-					return {
-						...value,
-						id: key,
-					};
-				}
-				return { id: key }; // Fallback if value is not an object
-			}) as Appointment[];
-		}) || []; // Fallback to an empty array if undefined
+	const { replicache } = useContext(AppContext);
+	const rep = replicache.user.rep;
+	const close = replicache.user.close;
+	const appointments = useSubscribe(rep, listAppointments, { default: [] });
 
 	useEffect(() => {
 		// seedData(rep);

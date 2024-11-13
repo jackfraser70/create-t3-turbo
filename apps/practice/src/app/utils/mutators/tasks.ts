@@ -1,6 +1,5 @@
-export interface Task {
-	id: string;
-	name: string;
-	dueDate: string;
-	// Add any additional properties here
-}
+export type Task = {
+	readonly id: string;
+	readonly name: string;
+	readonly dueDate: string;
+};
