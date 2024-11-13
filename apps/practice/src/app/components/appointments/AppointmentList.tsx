@@ -7,6 +7,8 @@ import type { ReadTransaction } from "replicache";
 // import { Replicache } from "replicache";
 import { useSubscribe } from "replicache-react";
 import { AppContext } from "~/app/contexts/AppContext";
+import type { BaseTypeRep } from "~/app/utils/mutators/baseTypesRep";
+import { listItems } from "~/utils/replicacheItems";
 import { useReplicache } from "../../utils/use-replicache";
 import AppointmentCard from "./AppointmentCard";
 // const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
@@ -56,30 +58,35 @@ import AppointmentCard from "./AppointmentCard";
 // 	// }
 // };
 interface AppointmentListProps {
-	selectedAppointment: string | null;
-	setSelectedAppointment: (appointment: string | null) => void;
+	selectedAppointment: Appointment | null;
+	setSelectedAppointment: (appointment: Appointment | null) => void;
 }
 
-export type Appointment = {
-	id: string;
+export type Appointment = BaseTypeRep & {
 	time: string;
 	name: string;
 };
 
-export async function listAppointments(tx: ReadTransaction) {
-	return await tx
-		.scan<Appointment>({ prefix: "appointment/" })
-		.values()
-		.toArray();
-}
 const AppointmentList = ({
 	selectedAppointment,
 	setSelectedAppointment,
 }: AppointmentListProps) => {
-	const { replicache } = useContext(AppContext);
-	const rep = replicache.user.rep;
-	const close = replicache.user.close;
-	const appointments = useSubscribe(rep, listAppointments, { default: [] });
+	const context = useContext(AppContext);
+
+	if (!context) {
+		throw new Error("AppContext must be used within an AppProvider");
+	}
+
+	const { setState, state } = context;
+
+	const rep = state.replicache.user.rep;
+
+	// Use the generic listItems function with the "appointment/" prefix
+	const appointments = useSubscribe(
+		rep,
+		(tx) => listItems<Appointment>(tx, "appointment/"),
+		{ default: [] },
+	);
 
 	useEffect(() => {
 		// seedData(rep);
@@ -91,6 +98,7 @@ const AppointmentList = ({
 					id: newId,
 					time: "12pm",
 					name: `New Appointment ${newId}`,
+					patientId: Math.random().toString(36).substring(2, 15),
 				};
 				console.log("newAppointment", newAppointment);
 				await rep.mutate.createAppointment(newAppointment);
@@ -111,17 +119,40 @@ const AppointmentList = ({
 	// );
 
 	//close the replicache when the component unmounts
-	useEffect(() => {
-		return () => {
-			close();
-		};
-	}, [close]);
+	// useEffect(() => {
+	// 	return () => {
+	// 		close();
+	// 	};
+	// }, [close]);
 
-	const deleteAppointment = async (name: string) => {
-		console.log("deleting appointment", name);
-		await rep.mutate.deleteItemAsync(name);
+	const deleteAppointment = async (appointment: Appointment) => {
+		console.log("deleting appointment", appointment);
+		await rep.mutate.deleteItemAsync(`appointment/${appointment.id}`);
 	};
 	const [refreshing, setRefreshing] = React.useState(false);
+
+	// SET THE patientId FROM THE APPOINTMENT when the appointment is selected
+	useEffect(() => {
+		if (selectedAppointment) {
+			console.log(
+				"selectedAppointment psssatient id",
+				selectedAppointment.patientId,
+			);
+			setState((prevState) => {
+				console.log("prevState", prevState);
+				const newState = {
+					...prevState,
+					patientId: selectedAppointment.patientId,
+				};
+				console.log("Updating state with", newState);
+				return newState;
+			});
+		}
+	}, [selectedAppointment, setState]);
+
+	useEffect(() => {
+		console.log("patientId changed::::", state.patientId);
+	}, [state]);
 
 	const onRefresh = React.useCallback(() => {
 		setRefreshing(true);
@@ -134,7 +165,9 @@ const AppointmentList = ({
 	return (
 		<View className="flex-1">
 			{/* <Text>{JSON.stringify(appointments)}</Text> */}
-			<Text className="text-primary text-2xl font-bold">Today</Text>
+			<Text className="text-primary text-2xl font-bold">
+				Today - {state.patientId} - {state.theme}
+			</Text>
 			<FlashList
 				data={appointments} // Ensure appointments is an array of Appointment objects
 				keyExtractor={(item: Appointment, index: number) => {
@@ -148,9 +181,9 @@ const AppointmentList = ({
 					<View>
 						<AppointmentCard
 							key={item.id}
-							name={item.name}
-							onPress={() => deleteAppointment(item.id)}
-							isSelected={selectedAppointment === item.id}
+							appointment={item}
+							onPress={() => setSelectedAppointment(item)}
+							isSelected={selectedAppointment?.id === item.id}
 						/>
 					</View>
 				)}

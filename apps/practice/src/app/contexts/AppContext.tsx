@@ -1,5 +1,5 @@
 import { createReplicacheExpoSQLiteKVStore } from "@react-native-replicache/react-native-expo-sqlite";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, use, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { Replicache } from "replicache";
 import { mutators } from "../utils/mutators/mutators";
@@ -12,46 +12,64 @@ type UserType = {
 	// Add other properties as needed
 };
 
-// Define the correct type for replicache
-type ReplicacheType = {
-	rep: Replicache<any>;
-	close: () => Promise<void>;
-};
-
-// Update AppContextType to use ReplicacheType
-type AppContextType = {
+// Define a type for the state
+type AppState = {
 	user: UserType | null;
 	theme: string;
-	setState: React.Dispatch<
-		React.SetStateAction<{ user: UserType | null; theme: string }>
-	>;
+	patientId: string;
 	replicache: {
-		user: ReplicacheType; // Use the defined ReplicacheType
+		user: {
+			rep: Replicache<any> | null;
+			close: () => Promise<void>;
+		};
 	};
 };
 
-const { rep, close } = useReplicache("tasks");
+// Update AppContextType to use the new AppState type
+type AppContextType = {
+	state: AppState;
+	setState: React.Dispatch<React.SetStateAction<AppState>>;
+};
+
+// const { rep, close } = useReplicache("tasks");
 // Create context with a default value
-export const AppContext = createContext<AppContextType>({
-	user: null,
-	theme: "light",
-	setState: () => {}, // Provide a default no-op function
-	replicache: {
-		user: {
-			rep,
-			close,
-		},
-	},
-});
+
+// export const AppContext = createContext<AppContextType>({
+// 	state: {
+// 		user: null,
+// 		theme: "light",
+// 		patientId: "1234",
+// 	},
+// 	setState: () => {}, // Provide a default no-op function
+// 	replicache: {
+// 		user: {
+// 			rep,
+// 			close,
+// 		},
+// 	},
+// });
+
+export const AppContext = createContext<AppContextType | null>(null);
 
 // Create a provider component
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
-	const [state, setState] = useState<{ user: UserType | null; theme: string }>({
+	// const [rep, setRep] = useState<Replicache<any> | null>(null);
+
+	const [state, setState] = useState<AppState>({
 		user: null,
-		theme: "light",
+		theme: "light2",
+		patientId: "1234",
+		replicache: {
+			user: {
+				rep: null,
+				close: () => Promise.resolve(),
+			},
+		},
 	});
 
-	const [rep, setRep] = useState<Replicache<any> | null>(null);
+	useEffect(() => {
+		console.log("state changed::::", state);
+	}, [state]);
 
 	useEffect(() => {
 		let userID = "textUser1";
@@ -77,16 +95,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 			logLevel: "info",
 		});
 
-		const unlisten = listen(async () => r.pull());
-		setRep(r);
+		// const unlisten = listen(async () => r.pull());
+		setState((prevState) => ({
+			...prevState,
+			replicache: { user: { rep: r, close: () => r.close() } },
+		}));
 
 		return () => {
-			unlisten();
+			// unlisten();
 			void r.close();
 		};
 	}, []);
 
-	if (!rep) {
+	if (!state.replicache.user.rep) {
 		return null;
 	}
 
@@ -117,7 +138,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
 	return (
 		<AppContext.Provider
-			value={{ ...state, setState, replicache: { user: { rep, close } } }}
+			value={{
+				state,
+				setState,
+			}}
 		>
 			{children}
 		</AppContext.Provider>

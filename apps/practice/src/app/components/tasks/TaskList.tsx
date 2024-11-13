@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
 	Button,
 	LayoutAnimation,
@@ -14,6 +14,7 @@ import type { ReadTransaction } from "replicache";
 import { useSubscribe } from "replicache-react";
 import { AppContext } from "~/app/contexts/AppContext";
 import type { Task } from "~/app/utils/mutators/tasks";
+import { listItems } from "~/utils/replicacheItems";
 
 // Enable LayoutAnimation on Android
 if (
@@ -23,27 +24,47 @@ if (
 	UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-export async function listTasks(tx: ReadTransaction) {
-	const tasks = await tx.scan<Task>({ prefix: "task/" }).values().toArray();
-	return tasks.sort(
-		(a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime(),
-	);
+// Define the type for your context
+interface AppContextType {
+	replicache: { user: { rep: any } }; // Adjust the type as needed
+	state: { patientId: string }; // Adjust the type as needed
 }
 
 const TaskList = () => {
-	const { replicache } = useContext(AppContext);
-	const rep = replicache.user.rep;
+	const [currentPatientId, setCurrentPatientId] = useState("NO_PATIENT_ID");
+	const context = useContext(AppContext); // Allow null
+	if (!context) {
+		throw new Error("AppContext is null");
+	}
+	const { state } = context;
 
-	const tasks = useSubscribe(rep, listTasks, { default: [] });
+	const rep = state.replicache.user.rep;
+	const tasks = useSubscribe(
+		rep,
+		(tx) => listItems<Task>(tx, `patient/${currentPatientId}/task/`),
+		{ default: [], dependencies: [currentPatientId] },
+	);
+
+	useEffect(() => {
+		if (state.patientId !== currentPatientId) {
+			// when patient changes, clear the tasks
+			console.log("patientId  changed", state.patientId);
+			setCurrentPatientId(state.patientId);
+			state.replicache.user.rep?.pull();
+		}
+	}, [state, currentPatientId]);
 
 	const handleNewTask = (name: string) => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		if (rep.mutate) {
-			rep.mutate.createTask({
+			const newTask: Task = {
 				id: Math.random().toString(36).substring(2, 15),
 				name,
 				dueDate: new Date().toISOString(),
-			});
+				patientId: state.patientId,
+			};
+			rep.mutate.createTask(newTask);
+			console.log("new task created", newTask);
 		} else {
 			console.error("Mutation object is undefined");
 		}
@@ -52,7 +73,7 @@ const TaskList = () => {
 	const handleDeleteTask = (id: string) => {
 		console.log("deleting task", id);
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-		rep.mutate.deleteItemAsync(`task/${id}`);
+		rep.mutate.deleteItemAsync(`patient/${state.patientId}/task/${id}`);
 	};
 
 	return (
@@ -62,7 +83,10 @@ const TaskList = () => {
 			</View>
 
 			<View className="h-full">
-				<Button title="New Task" onPress={() => handleNewTask("New Task 3")} />
+				<Button
+					title={`New Task for ${state.patientId}`}
+					onPress={() => handleNewTask(`New Task for ${state.patientId}`)}
+				/>
 				<FlashList
 					data={tasks}
 					keyExtractor={(item: Task, index: number) => {

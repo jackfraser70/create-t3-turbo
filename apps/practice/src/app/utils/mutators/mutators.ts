@@ -27,18 +27,16 @@
 
 import type { WriteTransaction } from "replicache";
 
+import type { Appointment } from "~/app/components/appointments/AppointmentList";
 import type { Task } from "./tasks";
 import { type Todo, type TodoUpdate, listTodos } from "./todo";
 
 export type M = typeof mutators;
 
 export const mutators = {
-	async createAppointment(
-		tx: WriteTransaction,
-		{ id, time, name }: { id: string; time: string; name: string },
-	) {
-		console.log("createAppointment____", id, time, name);
-		await tx.set(`appointment/${id}`, { time, name });
+	async createAppointment(tx: WriteTransaction, appointment: Appointment) {
+		console.log("createAppointment____", appointment);
+		await tx.set(`appointment/${appointment.id}`, appointment);
 	},
 
 	async deleteItemAsync(tx: WriteTransaction, id: string) {
@@ -47,7 +45,7 @@ export const mutators = {
 	},
 	async createTask(tx: WriteTransaction, task: Task) {
 		console.log("createTask____", task);
-		await tx.set(`task/${task.id}`, { ...task });
+		await tx.set(`patient/${task.patientId}/task/${task.id}`, task);
 	},
 	updateTodo: async (tx: WriteTransaction, update: TodoUpdate) => {
 		// In a real app you may want to validate the incoming data is in fact a
