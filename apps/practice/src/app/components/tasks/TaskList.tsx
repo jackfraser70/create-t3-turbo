@@ -13,8 +13,10 @@ import {
 import type { ReadTransaction } from "replicache";
 import { useSubscribe } from "replicache-react";
 import { AppContext } from "~/app/contexts/AppContext";
+import { getTasksPath } from "~/app/utils/mutators/mutators";
 import type { Task } from "~/app/utils/mutators/tasks";
 import { listItems } from "~/utils/replicacheItems";
+import type { Appointment } from "../appointments/AppointmentList";
 
 // Enable LayoutAnimation on Android
 if (
@@ -32,18 +34,24 @@ interface AppContextType {
 
 const TaskList = () => {
 	const [currentPatientId, setCurrentPatientId] = useState("NO_PATIENT_ID");
+
 	const context = useContext(AppContext); // Allow null
 	if (!context) {
 		throw new Error("AppContext is null");
 	}
-	const { state } = context;
 
+	const { state, setState } = context;
+	const selectedAppointment = state.selectedAppointment;
 	const rep = state.replicache.user.rep;
-	const tasks = useSubscribe(
-		rep,
-		(tx) => listItems<Task>(tx, `patient/${currentPatientId}/task/`),
-		{ default: [], dependencies: [currentPatientId] },
+	const pathToTasks = getTasksPath(
+		currentPatientId,
+		selectedAppointment?.id || "default-id",
 	);
+	console.log("pathToTasks>>>", pathToTasks);
+	const tasks = useSubscribe(rep, (tx) => listItems<Task>(tx, pathToTasks), {
+		default: [],
+		dependencies: [currentPatientId, selectedAppointment?.id],
+	});
 
 	useEffect(() => {
 		if (state.patientId !== currentPatientId) {
@@ -57,23 +65,42 @@ const TaskList = () => {
 	const handleNewTask = (name: string) => {
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		if (rep.mutate) {
-			const newTask: Task = {
-				id: Math.random().toString(36).substring(2, 15),
-				name,
-				dueDate: new Date().toISOString(),
-				patientId: state.patientId,
-			};
-			rep.mutate.createTask(newTask);
-			console.log("new task created", newTask);
+			if (selectedAppointment) {
+				const newTask: Task = {
+					id: Math.random().toString(36).substring(2, 15),
+					name,
+					dueDate: new Date().toISOString(),
+					patientId: state.patientId,
+					appointmentId: selectedAppointment.id,
+				};
+				rep.mutate.createTask(newTask);
+				console.log("new task created", newTask);
+			} else {
+				console.error("No appointment selected");
+			}
 		} else {
 			console.error("Mutation object is undefined");
 		}
 	};
 
-	const handleDeleteTask = (id: string) => {
-		console.log("deleting task", id);
+	const handleDeleteTask = (task: Task) => {
+		console.log("deleting task", task);
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-		rep.mutate.deleteItemAsync(`patient/${state.patientId}/task/${id}`);
+		rep.mutate.deleteTask(task);
+	};
+
+	const handleDeleteAppointment = (id: string) => {
+		console.log("deleting appointment", id);
+		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+		rep.mutate.deleteItemAsync(`appointment/${state.selectedAppointment?.id}`);
+		setState((prevState) => {
+			const newState = {
+				...prevState,
+				patientId: null,
+				selectedAppointment: null,
+			};
+			return newState;
+		});
 	};
 
 	return (
@@ -83,6 +110,10 @@ const TaskList = () => {
 			</View>
 
 			<View className="h-full">
+				<Button
+					title="Delete Appointment"
+					onPress={() => handleDeleteAppointment(state.appointmentId)}
+				/>
 				<Button
 					title={`New Task for ${state.patientId}`}
 					onPress={() => handleNewTask(`New Task for ${state.patientId}`)}
@@ -98,7 +129,7 @@ const TaskList = () => {
 					}}
 					renderItem={({ item }: { item: Task }) => (
 						<View>
-							<TouchableOpacity onPress={() => handleDeleteTask(item.id)}>
+							<TouchableOpacity onPress={() => handleDeleteTask(item)}>
 								<View key={item.id}>
 									<Ionicons
 										name="radio-button-off"

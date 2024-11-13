@@ -2,8 +2,8 @@ import { createReplicacheExpoSQLiteKVStore } from "@react-native-replicache/reac
 import React, { createContext, use, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { Replicache } from "replicache";
+import type { Appointment } from "../components/appointments/AppointmentList";
 import { mutators } from "../utils/mutators/mutators";
-import { useReplicache } from "../utils/use-replicache";
 // Define a type for the context value
 type UserType = {
 	// Define the properties of UserType here
@@ -17,6 +17,8 @@ type AppState = {
 	user: UserType | null;
 	theme: string;
 	patientId: string;
+	appointmentId: string;
+	selectedAppointment: Appointment | null;
 	replicache: {
 		user: {
 			rep: Replicache<any> | null;
@@ -59,6 +61,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 		user: null,
 		theme: "light2",
 		patientId: "1234",
+		appointmentId: "NON",
+		selectedAppointment: null,
 		replicache: {
 			user: {
 				rep: null,

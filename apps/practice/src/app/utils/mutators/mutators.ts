@@ -32,6 +32,11 @@ import type { Task } from "./tasks";
 import { type Todo, type TodoUpdate, listTodos } from "./todo";
 
 export type M = typeof mutators;
+export const getTasksPath = (patientId: string, appointmentId: string) =>
+	`patients/${patientId}/appointments/${appointmentId}/tasks/`;
+
+export const getTaskPath = (task: Task) =>
+	`${getTasksPath(task.patientId, task.appointmentId)}${task.id}`;
 
 export const mutators = {
 	async createAppointment(tx: WriteTransaction, appointment: Appointment) {
@@ -45,7 +50,13 @@ export const mutators = {
 	},
 	async createTask(tx: WriteTransaction, task: Task) {
 		console.log("createTask____", task);
-		await tx.set(`patient/${task.patientId}/task/${task.id}`, task);
+		const path = getTaskPath(task);
+		console.log("path>>>", path);
+		await tx.set(path, task);
+	},
+	async deleteTask(tx: WriteTransaction, task: Task) {
+		console.log("deleteTask____", task);
+		await tx.del(getTaskPath(task));
 	},
 	updateTodo: async (tx: WriteTransaction, update: TodoUpdate) => {
 		// In a real app you may want to validate the incoming data is in fact a

@@ -1,76 +1,19 @@
 import { FlashList } from "@shopify/flash-list";
 // import { customAlphabet } from "nanoid/non-secure";
-import React, { useEffect, useContext } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import type { ReadTransaction } from "replicache";
-// import type { WriteTransaction } from "replicache";
-// import { Replicache } from "replicache";
+import React, { useEffect, useContext, useState, useRef } from "react";
+import { Text, View } from "react-native";
 import { useSubscribe } from "replicache-react";
 import { AppContext } from "~/app/contexts/AppContext";
 import type { BaseTypeRep } from "~/app/utils/mutators/baseTypesRep";
 import { listItems } from "~/utils/replicacheItems";
-import { useReplicache } from "../../utils/use-replicache";
 import AppointmentCard from "./AppointmentCard";
-// const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10);
-// const rep = new Replicache({
-// 	name: "appointments",
-// 	licenseKey: "l58cd3914a58441f1a01198726ca82729",
-// 	mutators: {
-// 		async createAppointment(
-// 			tx: WriteTransaction,
-// 			{ id, time, name }: { id: string; time: string; name: string },
-// 		) {
-// 			await tx.put(`appointment/${id}`, { time, name });
-// 		},
-// 	},
-// 	pushURL: "/api/replicache/push",
-// 	pullURL: "/api/replicache/pull",
-// 	logLevel: "debug",
-// });
-
-// Define the type for an appointment
-
-// const seedData = async (rep: any) => {
-// 	// const dummyAppointments = [
-// 	// 	{
-// 	// 		id: Math.random().toString(36).substring(2, 15),
-// 	// 		time: "10am",
-// 	// 		name: "Tom Clean2",
-// 	// 	},
-// 	// 	{
-// 	// 		id: Math.random().toString(36).substring(2, 15),
-// 	// 		time: "10am",
-// 	// 		name: "Michael Mouthwash",
-// 	// 	},
-// 	// 	{
-// 	// 		id: Math.random().toString(36).substring(2, 15),
-// 	// 		time: "11am",
-// 	// 		name: "Molly Molar",
-// 	// 	},
-// 	// 	{
-// 	// 		id: Math.random().toString(36).substring(2, 15),
-// 	// 		time: "11am",
-// 	// 		name: "Peter Pulp",
-// 	// 	},
-// 	// ];
-// 	// for (const appointment of dummyAppointments) {
-// 	// 	await rep.mutate.createAppointment(appointment);
-// 	// }
-// };
-interface AppointmentListProps {
-	selectedAppointment: Appointment | null;
-	setSelectedAppointment: (appointment: Appointment | null) => void;
-}
 
 export type Appointment = BaseTypeRep & {
 	time: string;
 	name: string;
 };
 
-const AppointmentList = ({
-	selectedAppointment,
-	setSelectedAppointment,
-}: AppointmentListProps) => {
+const AppointmentList = () => {
 	const context = useContext(AppContext);
 
 	if (!context) {
@@ -79,13 +22,24 @@ const AppointmentList = ({
 
 	const { setState, state } = context;
 
+	const [currentSelectedAppointmentId, setCurrentSelectedAppointmentId] =
+		useState<string | null>(null);
+
 	const rep = state.replicache.user.rep;
+
+	const selectedAppointment = state.selectedAppointment;
+	const setSelectedAppointment = (appointment: Appointment | null) => {
+		setState((prevState) => ({
+			...prevState,
+			selectedAppointment: appointment,
+		}));
+	};
 
 	// Use the generic listItems function with the "appointment/" prefix
 	const appointments = useSubscribe(
 		rep,
 		(tx) => listItems<Appointment>(tx, "appointment/"),
-		{ default: [] },
+		{ default: [], dependencies: [state.patientId] },
 	);
 
 	useEffect(() => {
@@ -134,17 +88,14 @@ const AppointmentList = ({
 	// SET THE patientId FROM THE APPOINTMENT when the appointment is selected
 	useEffect(() => {
 		if (selectedAppointment) {
-			console.log(
-				"selectedAppointment psssatient id",
-				selectedAppointment.patientId,
-			);
+			setCurrentSelectedAppointmentId(selectedAppointment.id);
+			console.log("selectedAppointment fredddddd id", selectedAppointment);
 			setState((prevState) => {
-				console.log("prevState", prevState);
 				const newState = {
 					...prevState,
 					patientId: selectedAppointment.patientId,
+					selectedAppointment: selectedAppointment,
 				};
-				console.log("Updating state with", newState);
 				return newState;
 			});
 		}
@@ -162,14 +113,14 @@ const AppointmentList = ({
 			setRefreshing(false);
 		}, 500);
 	}, []);
+
 	return (
 		<View className="flex-1">
 			{/* <Text>{JSON.stringify(appointments)}</Text> */}
-			<Text className="text-primary text-2xl font-bold">
-				Today - {state.patientId} - {state.theme}
-			</Text>
+			<Text className="text-primary text-2xl font-bold">Today</Text>
 			<FlashList
-				data={appointments} // Ensure appointments is an array of Appointment objects
+				data={appointments}
+				// Ensure appointments is an array of Appointment objects
 				keyExtractor={(item: Appointment, index: number) => {
 					if (!item.id) {
 						console.warn("Missing id for item", item);
@@ -183,7 +134,7 @@ const AppointmentList = ({
 							key={item.id}
 							appointment={item}
 							onPress={() => setSelectedAppointment(item)}
-							isSelected={selectedAppointment?.id === item.id}
+							isSelected={currentSelectedAppointmentId === item.id}
 						/>
 					</View>
 				)}
@@ -192,6 +143,7 @@ const AppointmentList = ({
 				showsVerticalScrollIndicator={false}
 				refreshing={refreshing} // Control the refreshing state
 				onRefresh={onRefresh} // Handle the refresh action
+				extraData={{ currentSelectedAppointmentId }}
 			/>
 		</View>
 	);
