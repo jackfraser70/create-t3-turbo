@@ -47,15 +47,22 @@ const AppointmentList = () => {
 		const intervalId = setInterval(async () => {
 			if (appointments.length < 10) {
 				// set newId to a random id
+				const patientId = Math.random().toString(36).substring(2, 15);
 				const newId = Math.random().toString(36).substring(2, 15);
 				const newAppointment = {
 					id: newId,
 					time: "12pm",
 					name: `New Appointment ${newId}`,
-					patientId: Math.random().toString(36).substring(2, 15),
+					patientId,
 				};
 				console.log("newAppointment", newAppointment);
 				await rep.mutate.createAppointment(newAppointment);
+
+				await rep.mutate.createPatient({
+					id: newId,
+					name: `Patient ${newId}`,
+					age: Math.floor(Math.random() * 100),
+				});
 			}
 		}, 5000);
 		return () => {
@@ -79,10 +86,6 @@ const AppointmentList = () => {
 	// 	};
 	// }, [close]);
 
-	const deleteAppointment = async (appointment: Appointment) => {
-		console.log("deleting appointment", appointment);
-		await rep.mutate.deleteItemAsync(`appointment/${appointment.id}`);
-	};
 	const [refreshing, setRefreshing] = React.useState(false);
 
 	// SET THE patientId FROM THE APPOINTMENT when the appointment is selected

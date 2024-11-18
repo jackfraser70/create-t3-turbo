@@ -28,6 +28,7 @@ if (
 
 // Define the type for your context
 interface AppContextType {
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	replicache: { user: { rep: any } }; // Adjust the type as needed
 	state: { patientId: string }; // Adjust the type as needed
 }
@@ -86,13 +87,16 @@ const TaskList = () => {
 	const handleDeleteTask = (task: Task) => {
 		console.log("deleting task", task);
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-		rep.mutate.deleteTask(task);
+		rep.mutate.deleteTasks([task]);
 	};
 
 	const handleDeleteAppointment = (id: string) => {
 		console.log("deleting appointment", id);
 		LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 		rep.mutate.deleteItemAsync(`appointment/${state.selectedAppointment?.id}`);
+		// delete all tasks for the appointment
+		rep.mutate.deleteTasks(tasks);
+
 		setState((prevState) => {
 			const newState = {
 				...prevState,
@@ -105,15 +109,15 @@ const TaskList = () => {
 
 	return (
 		<View className="p-4 my-5">
+			<Button
+				title="Delete Appointment"
+				onPress={() => handleDeleteAppointment(state.appointmentId)}
+			/>
 			<View className="flex-row justify-between  mb-2">
 				<Text className="text-pink-600 font-bold">Tasks</Text>
 			</View>
 
 			<View className="h-full">
-				<Button
-					title="Delete Appointment"
-					onPress={() => handleDeleteAppointment(state.appointmentId)}
-				/>
 				<Button
 					title={`New Task for ${state.patientId}`}
 					onPress={() => handleNewTask(`New Task for ${state.patientId}`)}

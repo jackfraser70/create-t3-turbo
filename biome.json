@@ -15,7 +15,9 @@
 			"dist",
 			"expo-env.d.ts",
 			".cache",
-			"node_modules"
+			"node_modules",
+			".sst",
+			"*.d.ts"
 		]
 	},
 	"formatter": {

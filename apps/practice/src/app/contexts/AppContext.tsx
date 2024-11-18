@@ -21,6 +21,7 @@ type AppState = {
 	selectedAppointment: Appointment | null;
 	replicache: {
 		user: {
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			rep: Replicache<any> | null;
 			close: () => Promise<void>;
 		};

@@ -28,6 +28,7 @@
 import type { WriteTransaction } from "replicache";
 
 import type { Appointment } from "~/app/components/appointments/AppointmentList";
+import type { Patient } from "~/app/components/patient/PatientDetails";
 import type { Task } from "./tasks";
 import { type Todo, type TodoUpdate, listTodos } from "./todo";
 
@@ -48,15 +49,21 @@ export const mutators = {
 		console.log("deleteItemAsync____", id);
 		await tx.del(id);
 	},
+	async createPatient(tx: WriteTransaction, patient: Patient) {
+		console.log("createPatient____", patient);
+		await tx.set(`patients/${patient.id}`, patient);
+	},
 	async createTask(tx: WriteTransaction, task: Task) {
 		console.log("createTask____", task);
 		const path = getTaskPath(task);
 		console.log("path>>>", path);
 		await tx.set(path, task);
 	},
-	async deleteTask(tx: WriteTransaction, task: Task) {
-		console.log("deleteTask____", task);
-		await tx.del(getTaskPath(task));
+	async deleteTasks(tx: WriteTransaction, tasks: Task[]) {
+		console.log("deleteTasks____", tasks);
+		for (const task of tasks) {
+			await tx.del(getTaskPath(task));
+		}
 	},
 	updateTodo: async (tx: WriteTransaction, update: TodoUpdate) => {
 		// In a real app you may want to validate the incoming data is in fact a

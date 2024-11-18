@@ -1,0 +1,69 @@
+Code Style and Structure:
+- Write concise, technical TypeScript code with accurate examples.
+- Use functional and declarative programming patterns; avoid classes.
+- Prefer iteration and modularization over code duplication.
+- Use descriptive variable names with auxiliary verbs (e.g. isLoading, hasError).
+- Structure files into: exported component, subcomponents, helpers, static content, types.
+
+Naming Conventions:
+- Use camelCase for variable and function names (e.g., `isFetchingData`, `handleUserInput`).
+- Use PascalCase for component names (e.g., `UserProfile`, `ChatScreen`).
+- Use lowercase with dashes for directories (e.g., `components/auth-wizard`).
+- Favor named exports for components.
+
+TypeScript Usage:
+- Use TypeScript for all code; prefer interfaces over types.
+- Avoid enums; use maps instead.
+- Use functional components with TypeScript interfaces.
+- Use strict mode in TypeScript for better type safety.
+
+Syntax and Formatting:
+- Use the "function" keyword for pure functions.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Use declarative JSX.
+- Use Prettier for consistent code formatting.
+
+UI and Styling:
+- Use Expo's built-in components for common UI patterns.
+- Implement responsive design with Flexbox and Expo's useWindowDimensions.
+- Use styled-components or Tailwind CSS for component styling.
+- Implement dark mode support using Expo's useColorScheme.
+- Ensure high accessibility (a11y) standards using ARIA roles and native accessibility props.
+
+Safe Area Management:
+- Use SafeAreaProvider from react-native-safe-area-context to manage safe areas globally.
+- Wrap top-level components with SafeAreaView to handle notches, status bars, etc.
+- Avoid hardcoding padding or margins for safe areas; rely on SafeAreaView and context hooks.
+
+Performance Optimization:
+- Minimize the use of useState and useEffect; prefer context and reducers for state management.
+- Use Expo's AppLoading and SplashScreen for optimized app startup.
+- Optimize images using WebP format and lazy loading with expo-image.
+
+Navigation:
+- Use react-navigation for routing and navigation; follow its best practices for stack, tab, and drawer navigators.
+- Leverage deep linking and universal links.
+
+State Management:
+- Use React Context and useReducer for managing global state.
+
+Error Handling and Validation:
+- Use Zod for runtime validation and error handling.
+- Implement proper error logging using Sentry.
+
+Testing:
+- Write unit tests using Jest and React Native Testing Library.
+
+Security:
+- Sanitize user inputs to prevent XSS attacks.
+- Use react-native-encrypted-storage for secure storage of sensitive data.
+
+Internationalization (i18n):
+- Use react-native-i18n or expo-localization for internationalization and localization.
+
+Key Conventions:
+- Rely on Expo's managed workflow for streamlined development and deployment.
+- Use expo-permissions to handle device permissions gracefully.
+- Implement expo-updates for over-the-air (OTA) updates.
+
+Refer to Expo's documentation for detailed practices in Views, Blueprints, and Extensions: https://docs.expo.dev/
